@@ -10,7 +10,9 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=[
         'flask==1.1.*',
-        'Flask-SQLAlchemy==2.4.*'
+        'Flask-SQLAlchemy==2.4.*',
+        'flask-bcrypt==0.7.*',
+        'pyjwt==1.7.*'
     ],
     classifiers=(
         "Programming Language :: Python :: 3.7",
