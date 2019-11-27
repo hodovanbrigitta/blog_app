@@ -7,7 +7,7 @@ class AppUser(db.Model):
     __tablename__ = 'app_user'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String, nullable=False)
+    app_username = db.Column(db.String, unique=True, nullable=False)
     user_password = db.Column(db.String, nullable=False)
 
     blogs = db.relationship("Blog", back_populates="app_user")
@@ -29,7 +29,7 @@ class Blog(db.Model):
 
     comments = db.relationship("Comment", back_populates="blog")
 
-    likes = db.relationship("Like", back_populates="app_user")
+    likes = db.relationship("Like", back_populates="blog")
 
 
 class Comment(db.Model):
@@ -54,3 +54,5 @@ class Like(db.Model):
 
     blog_id = db.Column(db.Integer, db.ForeignKey('blog.id'))
     blog = db.relationship("Blog", back_populates="likes")
+
+
