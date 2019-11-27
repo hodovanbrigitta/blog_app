@@ -51,7 +51,7 @@ class Auth:
         """
         re = {'data': {}, 'error': {}}
         try:
-            payload = jwt.decode(token, os.getenv('JWT_SECRET_KEY'))
+            payload = jwt.decode(token, current_app.config['JWT_SECRET_KEY'])
             re['data'] = {'id': payload['sub']}
             return re
         except jwt.ExpiredSignatureError as e1:
@@ -67,18 +67,12 @@ class Auth:
         """
         Auth decorator
         """
-
         @wraps(func)
         def decorated_auth(*args, **kwargs):
             if 'api-token' not in request.headers:
-                return Response(
-                    mimetype="application/json",
-                    response=json.dumps({
-                                            'error': 'Authentication token is'
-                                                     ' not available, please '
-                                                     'login to get one'}),
-                    status=400
-                )
+                return invalid_json_response('Authentication token is not '
+                                             'available, please login to '
+                                             'get one')
             token = request.headers.get('api-token')
             data = Auth.decode_token(token)
             if data['error']:
