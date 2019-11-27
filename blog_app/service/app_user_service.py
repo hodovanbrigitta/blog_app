@@ -3,7 +3,7 @@ import os
 from functools import wraps
 
 import jwt
-from flask import Response, request, current_app
+from flask import Response, request, current_app, g
 
 from blog_app.controller import bcrypt, invalid_json_response
 from blog_app.data import AppUser, db
@@ -30,7 +30,7 @@ def get_user_by_id(user_id):
 
 class Auth:
     @staticmethod
-    def generate_token(username):
+    def generate_token(user_id):
         """
         Generate Token Method
         """
@@ -38,7 +38,7 @@ class Auth:
             payload = {
                 'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),
                 'iat': datetime.datetime.utcnow(),
-                'sub': username
+                'sub': user_id
             }
             return jwt.encode(payload, current_app.config['JWT_SECRET_KEY'], algorithm='HS256').decode("utf-8")
         except Exception as e:
@@ -52,7 +52,7 @@ class Auth:
         re = {'data': {}, 'error': {}}
         try:
             payload = jwt.decode(token, current_app.config['JWT_SECRET_KEY'])
-            re['data'] = {'id': payload['sub']}
+            re['data'] = {'user_id': payload['sub']}
             return re
         except jwt.ExpiredSignatureError as e1:
             re['error'] = {'message': 'token expired, please login again'}
@@ -82,7 +82,7 @@ class Auth:
                     status=400
                 )
 
-            user_id = data['data']['id']
+            user_id = data['data']['user_id']
             check_user = get_user_by_id(user_id)
             if not check_user:
                 return Response(
@@ -91,7 +91,7 @@ class Auth:
                         {'error': 'user does not exist, invalid token'}),
                     status=400
                 )
-            g.user = {'id': user_id}
+            g.user = {'user_id': user_id}
             return func(*args, **kwargs)
 
         return decorated_auth
