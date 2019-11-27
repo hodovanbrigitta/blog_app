@@ -5,7 +5,7 @@ from flask import Blueprint, request, jsonify, make_response, Response
 from blog_app.controller import invalid_json_response, bcrypt
 from blog_app.data import AppUser, db
 from blog_app.service.app_user_service import get_user_by_username, \
-    __generate_hash, Auth
+    __generate_hash, Auth, check_hash
 
 user_api = Blueprint('app_user', __name__)
 
@@ -37,6 +37,45 @@ def create_user():
         "app_username": app_user.app_username,
         "user_password": app_user.user_password,
     })
-    return token
+    res_token = jsonify({
+        "jwt-token": token,
+        "id": app_user.id,
+        "app_username": app_user.app_username,
+        "user_password": app_user.user_password
+    })
+    return make_response(res_token, 201)
+
+
+@user_api.route('/login', methods=['POST'])
+def login_user():
+    data = request.get_json()
+    try:
+        actual_user = AppUser(
+            app_username=data["app_username"],
+            user_password=data["user_password"]
+        )
+    except KeyError as e:
+        return invalid_json_response(f"missing property: {e}")
+
+    user_in_db = get_user_by_username(data["app_username"])
+
+    if not user_in_db:
+        return invalid_json_response(f"invalid credentials")
+
+    if not check_hash(user_in_db.user_password, data["user_password"]):
+        return invalid_json_response(f"invalid password")
+
+    token = Auth.generate_token(user_in_db.app_username)
+
+    res_token = jsonify({
+        "jwt-token": token,
+        "id": user_in_db.id,
+        "app_username": user_in_db.app_username,
+        "user_password": user_in_db.user_password
+    })
+    return make_response(res_token, 200)
+
+
+
 
 
