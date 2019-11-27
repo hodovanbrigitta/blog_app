@@ -26,12 +26,13 @@ def create_user():
     except KeyError as e:
         return invalid_json_response(f"missing property: {e}")
     user_in_db = get_user_by_username(data["app_username"])
+
     if user_in_db:
         return invalid_json_response(f"User: {data['app_username']} already exist")
     db.session.add(app_user)
     db.session.commit()
     db.session.refresh(app_user)
-    token = Auth.generate_token(app_user.app_username)
+    token = Auth.generate_token(app_user.id)
     category_resource = jsonify({
         "id": app_user.id,
         "app_username": app_user.app_username,
@@ -60,12 +61,12 @@ def login_user():
     user_in_db = get_user_by_username(data["app_username"])
 
     if not user_in_db:
-        return invalid_json_response(f"invalid credentials")
+        return invalid_json_response(f"user with username {data['app_username']} does not exist")
 
     if not check_hash(user_in_db.user_password, data["user_password"]):
         return invalid_json_response(f"invalid password")
 
-    token = Auth.generate_token(user_in_db.app_username)
+    token = Auth.generate_token(user_in_db.id)
 
     res_token = jsonify({
         "jwt-token": token,
