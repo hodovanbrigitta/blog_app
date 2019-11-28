@@ -1,9 +1,10 @@
 from flask import Blueprint, request, jsonify, make_response, g
 from werkzeug.exceptions import BadRequest
 
-from blog_app.controller import invalid_json_response
+from blog_app.controller import invalid_json_response, delete
 from blog_app.data import Blog, db
 from blog_app.service.app_user_service import get_user_by_id, Auth
+from blog_app.service.blog_service import get_blog_by_id, update_blog_in_db
 
 blog_api = Blueprint('blog', __name__)
 
@@ -24,7 +25,7 @@ def get_blogs():
     } for blog in blog_models])
 
 
-@blog_api.route("/blog/<int:blog_id>", methods=["GET"])
+@blog_api.route("/blog/<blog_id>", methods=["GET"])
 def get_blog(blog_id):
     """
     Returns a blog from our application with the given ID
@@ -33,6 +34,10 @@ def get_blog(blog_id):
     :return: a blog from our application with the given ID
     """
     blog = db.session.query(Blog).filter(Blog.id == blog_id).first()
+    try:
+        blog_id = int(blog_id)
+    except ValueError:
+        return invalid_json_response("invalid input type")
     if blog is None:
         return invalid_json_response(f"blog with ID {blog_id} does not exist")
 
@@ -73,7 +78,7 @@ def create_blog():
     return make_response(blog_resource, 201)
 
 
-@blog_api.route("/blog/<int:blog_id>", methods=["PUT"])
+@blog_api.route("/blog/<blog_id>", methods=["PUT"])
 @Auth.auth_required
 def update_blog(blog_id):
     """
@@ -86,16 +91,17 @@ def update_blog(blog_id):
     except BadRequest:
         return invalid_json_response("invalid request body")
 
-    blog = db.session.query(Blog).filter(Blog.id == blog_id).first()
+    blog = get_blog_by_id(blog_id)
+    try:
+        blog_id = int(blog_id)
+    except ValueError:
+        return invalid_json_response("invalid input type")
     if blog is None:
         return invalid_json_response(
             f"recipe with ID {blog_id} does not exist")
     if blog.user_id != g.user.get('user_id'):
         return invalid_json_response("permission denied")
-    blog.title = data["title"]
-    blog.content = data["content"]
-    db.session.commit()
-    db.session.refresh(blog)
+    update_blog_in_db(blog, data)
     return jsonify({
         "id": blog.id,
         "title": blog.title,
@@ -104,7 +110,7 @@ def update_blog(blog_id):
     })
 
 
-@blog_api.route("/blog/<int:blog_id>", methods=["DELETE"])
+@blog_api.route("/blog/<blog_id>", methods=["DELETE"])
 @Auth.auth_required
 def delete_blog(blog_id):
     """
@@ -112,12 +118,15 @@ def delete_blog(blog_id):
 
     :return: 204 No Content
     """
-    blog = db.session.query(Blog).filter(Blog.id == blog_id).first()
+    try:
+        blog_id = int(blog_id)
+    except ValueError:
+        return invalid_json_response("invalid input type")
+    blog = get_blog_by_id(blog_id)
     if not blog:
         return invalid_json_response("blog not found")
     if blog.user_id != g.user.get('user_id'):
         return invalid_json_response("permission denied")
     if blog:
-        db.session.delete(blog)
-        db.session.commit()
+        delete(blog)
     return '', 204

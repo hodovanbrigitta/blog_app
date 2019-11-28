@@ -23,7 +23,7 @@ def get_comments():
     } for comment in comment_models])
 
 
-@comment_api.route("/blog/<int:blog_id>/comment", methods=["POST"])
+@comment_api.route("/blog/<blog_id>/comment", methods=["POST"])
 @Auth.auth_required
 def create_comment(blog_id):
     """
@@ -40,6 +40,10 @@ def create_comment(blog_id):
         )
     except KeyError as e:
         return invalid_json_response(f"missing property: {e}")
+    try:
+        blog_id = int(blog_id)
+    except ValueError:
+        return invalid_json_response("invalid input type")
     blog = db.session.query(Blog).filter(Blog.id == blog_id).first()
     if blog is None:
         return invalid_json_response(f"blog with ID {blog_id} does not exist")

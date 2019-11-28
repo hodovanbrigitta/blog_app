@@ -28,6 +28,10 @@ def get_user_by_id(user_id):
     return db.session.query(AppUser).filter(AppUser.id == user_id).first()
 
 
+def get_all_users():
+    return db.session.query(AppUser).all()
+
+
 class Auth:
     @staticmethod
     def generate_token(user_id):

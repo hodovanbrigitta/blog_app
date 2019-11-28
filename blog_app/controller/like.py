@@ -21,7 +21,7 @@ def get_likes():
     } for like in like_models])
 
 
-@like_api.route("/blog/<int:blog_id>/like", methods=["POST"])
+@like_api.route("/blog/<blog_id>/like", methods=["POST"])
 @Auth.auth_required
 def add_like(blog_id):
     """
@@ -31,6 +31,10 @@ def add_like(blog_id):
     """
     blog = db.session.query(Blog).filter(Blog.id == blog_id).first()
     act_user_id = g.user.get('user_id')
+    try:
+        blog_id = int(blog_id)
+    except ValueError:
+        return invalid_json_response("invalid input type")
     if blog is None:
         return invalid_json_response(f"blog with ID {blog_id} does not exist")
     like = db.session.query(Like).filter(Like.user_id == act_user_id, Like.blog_id == blog_id).first()
