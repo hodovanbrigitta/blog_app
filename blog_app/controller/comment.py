@@ -7,6 +7,22 @@ from blog_app.service.app_user_service import Auth
 comment_api = Blueprint('comment', __name__)
 
 
+@comment_api.route("/comment", methods=["GET"])
+def get_comments():
+    """
+    Returns every comment from our application
+
+    :return: every comment from our application
+    """
+    comment_models = db.session.query(Comment).all()
+    return jsonify([{
+        "id": comment.id,
+        "content": comment.content,
+        "user_id": comment.user_id,
+        "blog_id": comment.blog_id
+    } for comment in comment_models])
+
+
 @comment_api.route("/blog/<int:blog_id>/comment", methods=["POST"])
 @Auth.auth_required
 def create_comment(blog_id):
