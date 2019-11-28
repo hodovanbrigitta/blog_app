@@ -10,6 +10,40 @@ from blog_app.service.app_user_service import get_user_by_username, \
 user_api = Blueprint('app_user', __name__)
 
 
+@user_api.route("/app_user", methods=["GET"])
+def get_app_users():
+    """
+    Returns every users from our application
+
+    :return: every user from our application
+    """
+    user_models = db.session.query(AppUser).all()
+    return jsonify([{
+        "id": app_user.id,
+        "app_username": app_user.app_username,
+        "user_password": app_user.user_password
+    } for app_user in user_models])
+
+
+@user_api.route("/app_user/<int:user_id>", methods=["GET"])
+def get_app_user(user_id):
+    """
+    Returns a user from our application with the given ID
+
+    :param user_id: the user's ID to return
+    :return: a user from our application with the given ID
+    """
+    app_user = db.session.query(AppUser).filter(AppUser.id == user_id).first()
+    if app_user is None:
+        return invalid_json_response(
+            f"user with ID {user_id} does not exist")
+    return jsonify({
+        "id": app_user.id,
+        "app_username": app_user.app_username,
+        "user_password": app_user.user_password
+    })
+
+
 @user_api.route("/app_user", methods=["POST"])
 def create_user():
     """
@@ -33,11 +67,6 @@ def create_user():
     db.session.commit()
     db.session.refresh(app_user)
     token = Auth.generate_token(app_user.id)
-    category_resource = jsonify({
-        "id": app_user.id,
-        "app_username": app_user.app_username,
-        "user_password": app_user.user_password,
-    })
     res_token = jsonify({
         "jwt-token": token,
         "id": app_user.id,
