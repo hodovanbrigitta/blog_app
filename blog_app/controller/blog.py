@@ -25,7 +25,7 @@ def get_blogs():
 
 
 @blog_api.route("/blog/<int:blog_id>", methods=["GET"])
-def get_category(blog_id):
+def get_blog(blog_id):
     """
     Returns a blog from our application with the given ID
 
