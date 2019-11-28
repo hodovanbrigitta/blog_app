@@ -19,7 +19,7 @@ def add_like(blog_id):
     act_user_id = g.user.get('user_id')
     if blog is None:
         return invalid_json_response(f"blog with ID {blog_id} does not exist")
-    like = db.session.query(Like).filter(Like.user_id == act_user_id, Like.blog_id == blog_id.first()
+    like = db.session.query(Like).filter(Like.user_id == act_user_id, Like.blog_id == blog_id).first()
     if like:
         return invalid_json_response(f"like already exist")
     db.session.add(like)
