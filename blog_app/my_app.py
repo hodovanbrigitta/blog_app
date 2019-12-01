@@ -1,7 +1,6 @@
 import os
 
 from flask import Flask
-from flask_bcrypt import Bcrypt
 
 from blog_app.controller.app_user import user_api
 from blog_app.controller.blog import blog_api
@@ -26,7 +25,6 @@ def create_app(filename):
     app_.register_blueprint(like_api)
 
     return app_
-
 
 
 app = create_app('mydatabase.db')

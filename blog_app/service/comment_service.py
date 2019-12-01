@@ -25,4 +25,3 @@ def update_comment_in_db(comment, data):
     comment.content = data["content"]
     db.session.commit()
     db.session.refresh(comment)
-

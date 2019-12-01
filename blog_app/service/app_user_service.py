@@ -28,4 +28,3 @@ def create_user(username, user_password):
         app_username=username,
         user_password=user_password
     )
-

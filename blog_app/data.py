@@ -27,7 +27,8 @@ class Blog(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('app_user.id'))
     app_user = db.relationship("AppUser", back_populates="blogs")
 
-    comments = db.relationship("Comment", cascade="all,delete", back_populates="blog")
+    comments = db.relationship("Comment", cascade="all,delete",
+                               back_populates="blog")
 
     likes = db.relationship("Like", cascade="all,delete", back_populates="blog")
 

@@ -78,4 +78,3 @@ class Authentication:
 
 
 auth = Authentication()
-
