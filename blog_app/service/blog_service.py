@@ -10,3 +10,11 @@ def update_blog_in_db(blog, data):
     blog.content = data["content"]
     db.session.commit()
     db.session.refresh(blog)
+
+
+def create_blog(title, content, user_id):
+    return Blog(
+        title=title,
+        content=content,
+        user_id=user_id
+    )
