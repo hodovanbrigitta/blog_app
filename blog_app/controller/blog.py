@@ -112,7 +112,6 @@ def delete_blog(blog_id):
 
     :return: 204 No Content
     """
-    # TODO what happens if blog has comments in the database?
     try:
         blog_id = int(blog_id)
     except ValueError:
