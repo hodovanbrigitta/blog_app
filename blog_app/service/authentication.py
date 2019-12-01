@@ -6,7 +6,7 @@ from flask import Response, request, current_app, g
 from flask import json
 
 from blog_app.controller import invalid_json_response
-from blog_app.service.app_user_service import get_user_by_id
+from blog_app.service.app_user import get_user_by_id
 
 
 class Authentication:

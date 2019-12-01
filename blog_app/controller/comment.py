@@ -3,8 +3,8 @@ from flask import Blueprint, request, g, jsonify, make_response
 from blog_app.controller import invalid_json_response
 from blog_app.service import save, delete
 from blog_app.service.authentication import auth
-from blog_app.service.blog_service import get_blog_by_id
-from blog_app.service.comment_service import get_all_comments, \
+from blog_app.service.blog import get_blog_by_id
+from blog_app.service.comment import get_all_comments, \
     get_comments_by_blog_id, create_comment, get_comment_by_id, \
     update_comment_in_db
 

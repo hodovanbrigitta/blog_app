@@ -4,7 +4,7 @@ from blog_app.controller import invalid_json_response
 from blog_app.data import Like, db, Blog
 from blog_app.service import save
 from blog_app.service.authentication import auth
-from blog_app.service.like_service import create_like, check_like
+from blog_app.service.like import create_like, check_like
 
 like_api = Blueprint('like', __name__)
 

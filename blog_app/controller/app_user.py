@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify, make_response, g
 
 from blog_app.controller import invalid_json_response
 from blog_app.service import save
-from blog_app.service.app_user_service import get_user_by_username, \
+from blog_app.service.app_user import get_user_by_username, \
     generate_hash, check_hash, get_all_users, get_user_by_id, \
     create_user
 from blog_app.service.authentication import auth

@@ -4,7 +4,7 @@ from blog_app.controller import invalid_json_response
 from blog_app.data import Blog, db
 from blog_app.service import save, delete
 from blog_app.service.authentication import auth
-from blog_app.service.blog_service import get_blog_by_id, update_blog_in_db, \
+from blog_app.service.blog import get_blog_by_id, update_blog_in_db, \
     create_blog
 
 blog_api = Blueprint('blog', __name__)
