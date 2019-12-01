@@ -92,7 +92,7 @@ def update_blog(blog_id):
         return invalid_json_response("invalid input type")
     if blog is None:
         return invalid_json_response(
-            f"recipe with ID {blog_id} does not exist")
+            f"blog with ID {blog_id} does not exist")
     if blog.user_id != g.user.get('user_id'):
         return invalid_json_response("permission denied")
     update_blog_in_db(blog, data)
