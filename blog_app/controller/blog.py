@@ -60,7 +60,6 @@ def create_new_blog():
     """
     data = request.get_json()
     try:
-        # TODO ???? recursive
         blog = create_blog(title=data["title"], content=data["content"],
                            user_id=g.user.get('user_id'))
     except KeyError as e:
@@ -84,13 +83,8 @@ def update_blog(blog_id):
     :return: the updated blog
     """
     data = request.get_json()
-    try:
-        # TODO calls wrong method
-        blog = create_blog(title=data["title"], content=data["content"],
-                           user_id=g.user.get('user_id'))
-    except KeyError as e:
-        return invalid_json_response(f"missing property: {e}")
-
+    if not data["title"] or not data["content"] or not g.user.get('user_id'):
+        return invalid_json_response(f"missing property")
     blog = get_blog_by_id(blog_id)
     try:
         blog_id = int(blog_id)
