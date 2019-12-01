@@ -1,8 +1,10 @@
-from flask import Blueprint, request, g, jsonify, make_response
+from flask import Blueprint, g, jsonify, make_response
 
 from blog_app.controller import invalid_json_response
 from blog_app.data import Like, db, Blog
-from blog_app.service.app_user_service import Auth
+from blog_app.service import save
+from blog_app.service.authentication import auth
+from blog_app.service.like_service import create_like, check_like
 
 like_api = Blueprint('like', __name__)
 
@@ -22,7 +24,7 @@ def get_likes():
 
 
 @like_api.route("/blog/<blog_id>/like", methods=["POST"])
-@Auth.auth_required
+@auth.auth_required
 def add_like(blog_id):
     """
     Add a like to a blog
@@ -37,16 +39,14 @@ def add_like(blog_id):
         return invalid_json_response("invalid input type")
     if blog is None:
         return invalid_json_response(f"blog with ID {blog_id} does not exist")
-    like = db.session.query(Like).filter(Like.user_id == act_user_id, Like.blog_id == blog_id).first()
+    like = check_like(act_user_id, blog_id)
     if like:
         return invalid_json_response(f"you have already liked this blog")
-    like = Like(
-        user_id=g.user.get('user_id'),
-        blog_id=blog_id
-    )
-    db.session.add(like)
-    db.session.commit()
-    db.session.refresh(like)
+    try:
+        like = create_like(user_id=g.user.get('user_id'), blog_id=blog_id)
+    except KeyError as e:
+        return invalid_json_response(f"missing property: {e}")
+    save(like)
     like_resource = jsonify({
         "user_id": like.user_id,
         "blog_id": like.blog_id
