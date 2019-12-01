@@ -5,7 +5,8 @@ from blog_app.service import save
 from blog_app.service.authentication import auth
 from blog_app.service.blog_service import get_blog_by_id
 from blog_app.service.comment_service import get_all_comments, \
-    get_comments_by_blog_id, create_comment
+    get_comments_by_blog_id, create_comment, get_comment_by_id, \
+    update_comment_in_db
 
 comment_api = Blueprint('comment', __name__)
 
@@ -73,5 +74,33 @@ def create_new_comment(blog_id):
     return make_response(comment_resource, 201)
 
 # TODO edit comment
+@comment_api.route("/comment/<comment_id>", methods=["PUT"])
+@auth.auth_required
+def update_comment(comment_id):
+    """
+    Update a comment
+
+    :return: the updated comment
+    """
+    data = request.get_json()
+    if not data["content"] or not g.user.get('user_id'):
+        return invalid_json_response(f"missing property")
+    comment = get_comment_by_id(comment_id)
+    try:
+        comment_id = int(comment_id)
+    except ValueError:
+        return invalid_json_response("invalid input type")
+    if comment is None:
+        return invalid_json_response(
+            f"comment with ID {comment_id} does not exist")
+    if comment.user_id != g.user.get('user_id'):
+        return invalid_json_response("permission denied")
+    update_comment_in_db(comment, data)
+    return jsonify({
+        "id": comment.id,
+        "content": comment.content,
+        "user_id": comment.user_id,
+        "blog_id": comment.blog_id
+    })
 
 # TODO delete comment
