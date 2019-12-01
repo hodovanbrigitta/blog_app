@@ -104,13 +104,9 @@ def login_user():
 
     user_in_db = get_user_by_username(actual_user.app_username)
 
-    if not user_in_db:
-        # TODO do not expose existing usernames
-        return invalid_json_response(
-            f"user with username {data['app_username']} does not exist")
-
-    if not check_hash(user_in_db.user_password, data["user_password"]):
-        return invalid_json_response(f"invalid password")
+    if not user_in_db or not check_hash(user_in_db.user_password,
+                                        data["user_password"]):
+        return invalid_json_response(f"invalid username or password")
 
     token = auth.generate_token(user_in_db.id)
 
