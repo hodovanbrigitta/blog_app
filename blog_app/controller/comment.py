@@ -4,7 +4,8 @@ from blog_app.controller import invalid_json_response
 from blog_app.service import save
 from blog_app.service.authentication import auth
 from blog_app.service.blog_service import get_blog_by_id
-from blog_app.service.comment_service import get_all_comments
+from blog_app.service.comment_service import get_all_comments, \
+    get_comments_by_blog_id, create_comment
 
 comment_api = Blueprint('comment', __name__)
 
@@ -12,10 +13,9 @@ comment_api = Blueprint('comment', __name__)
 @comment_api.route("/comment", methods=["GET"])
 def get_comments():
     """
-    # TODO limit to 1 blog
-    Returns every comment from our application
+    Returns every comment from our application with the given blog ID
 
-    :return: every comment from our application
+    :return: every comment from our application with the given blog ID
     """
     comment_models = get_all_comments()
     return jsonify([{
@@ -26,9 +26,25 @@ def get_comments():
     } for comment in comment_models])
 
 
+@comment_api.route("/blog/<blog_id>/comment", methods=["GET"])
+def get_comments_by_blog(blog_id):
+    """
+    Returns every comment from our application with the given blog ID
+
+    :return: every comment from our application with the given blog ID
+    """
+    comment_models = get_comments_by_blog_id(blog_id=blog_id)
+    return jsonify([{
+        "id": comment.id,
+        "content": comment.content,
+        "user_id": comment.user_id,
+        "blog_id": comment.blog_id
+    } for comment in comment_models])
+
+
 @comment_api.route("/blog/<blog_id>/comment", methods=["POST"])
 @auth.auth_required
-def create_comment(blog_id):
+def create_new_comment(blog_id):
     """
     Creates a comment
 
