@@ -1,7 +1,7 @@
 from flask import Blueprint, request, g, jsonify, make_response
 
 from blog_app.controller import invalid_json_response
-from blog_app.service import save
+from blog_app.service import save, delete
 from blog_app.service.authentication import auth
 from blog_app.service.blog_service import get_blog_by_id
 from blog_app.service.comment_service import get_all_comments, \
@@ -14,9 +14,9 @@ comment_api = Blueprint('comment', __name__)
 @comment_api.route("/comment", methods=["GET"])
 def get_comments():
     """
-    Returns every comment from our application with the given blog ID
+    Returns every comment from our application
 
-    :return: every comment from our application with the given blog ID
+    :return: every comment from our application
     """
     comment_models = get_all_comments()
     return jsonify([{
@@ -73,7 +73,7 @@ def create_new_comment(blog_id):
     })
     return make_response(comment_resource, 201)
 
-# TODO edit comment
+
 @comment_api.route("/comment/<comment_id>", methods=["PUT"])
 @auth.auth_required
 def update_comment(comment_id):
@@ -103,4 +103,24 @@ def update_comment(comment_id):
         "blog_id": comment.blog_id
     })
 
-# TODO delete comment
+
+@comment_api.route("/comment/<comment_id>", methods=["DELETE"])
+@auth.auth_required
+def delete_comment(comment_id):
+    """
+    Delete a comment from our application
+
+    :return: 204 No Content
+    """
+    try:
+        comment_id = int(comment_id)
+    except ValueError:
+        return invalid_json_response("invalid input type")
+    comment = get_comment_by_id(comment_id)
+    if not comment:
+        return invalid_json_response("blog not found")
+    if comment.user_id != g.user.get('user_id'):
+        return invalid_json_response("permission denied")
+    if comment:
+        delete(comment)
+    return '', 204
