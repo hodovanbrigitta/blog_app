@@ -1,10 +1,11 @@
 from flask import Blueprint, request, jsonify, make_response, g
-from werkzeug.exceptions import BadRequest
 
-from blog_app.controller import invalid_json_response, delete
+from blog_app.controller import invalid_json_response
 from blog_app.data import Blog, db
-from blog_app.service.app_user_service import get_user_by_id, Auth
-from blog_app.service.blog_service import get_blog_by_id, update_blog_in_db
+from blog_app.service import save, delete
+from blog_app.service.authentication import auth
+from blog_app.service.blog_service import get_blog_by_id, update_blog_in_db, \
+    create_blog
 
 blog_api = Blueprint('blog', __name__)
 
@@ -50,8 +51,8 @@ def get_blog(blog_id):
 
 
 @blog_api.route("/blog", methods=["POST"])
-@Auth.auth_required
-def create_blog():
+@auth.auth_required
+def create_new_blog():
     """
     Creates a blog
 
@@ -59,16 +60,12 @@ def create_blog():
     """
     data = request.get_json()
     try:
-        blog = Blog(
-            title=data["title"],
-            content=data["content"],
-            user_id=g.user.get('user_id')
-        )
+        # TODO ???? recursive
+        blog = create_blog(title=data["title"], content=data["content"],
+                           user_id=g.user.get('user_id'))
     except KeyError as e:
         return invalid_json_response(f"missing property: {e}")
-    db.session.add(blog)
-    db.session.commit()
-    db.session.refresh(blog)
+    save(blog)
     blog_resource = jsonify({
         "id": blog.id,
         "title": blog.title,
@@ -79,17 +76,20 @@ def create_blog():
 
 
 @blog_api.route("/blog/<blog_id>", methods=["PUT"])
-@Auth.auth_required
+@auth.auth_required
 def update_blog(blog_id):
     """
     Update a blog
 
     :return: the updated blog
     """
+    data = request.get_json()
     try:
-        data = request.get_json()
-    except BadRequest:
-        return invalid_json_response("invalid request body")
+        # TODO calls wrong method
+        blog = create_blog(title=data["title"], content=data["content"],
+                           user_id=g.user.get('user_id'))
+    except KeyError as e:
+        return invalid_json_response(f"missing property: {e}")
 
     blog = get_blog_by_id(blog_id)
     try:
@@ -111,13 +111,14 @@ def update_blog(blog_id):
 
 
 @blog_api.route("/blog/<blog_id>", methods=["DELETE"])
-@Auth.auth_required
+@auth.auth_required
 def delete_blog(blog_id):
     """
     Delete a blog from our application
 
     :return: 204 No Content
     """
+    # TODO what happens if blog has comments in the database?
     try:
         blog_id = int(blog_id)
     except ValueError:
