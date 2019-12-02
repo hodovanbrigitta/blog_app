@@ -13,7 +13,7 @@ user_api = Blueprint('app_user', __name__)
 @user_api.route("/app_user", methods=["GET"])
 def get_app_users():
     """
-    Returns every users from our application
+    Returns every user from our application
 
     :return: every user from our application
     """
